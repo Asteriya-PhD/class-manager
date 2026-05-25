@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>班级周度管理系统 · 支持Excel导入学生姓名</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+        body {
+            background: #f3f5f9;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .app-container {
+            max-width: 1600px;
+            width: 100%;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 24px 28px;
+        }
+        h1 {
+            font-size: 1.9rem;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        h1 small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #64748b;
+            margin-left: auto;
+        }
+        .top-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            background: #f8fafc;
+            padding: 16px 20px;
+            border-radius: 24px;
+        }
+        .date-picker-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .week-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 6px 12px;
+            border-radius: 40px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .week-selector button {
+            background: #eef2f6;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 30px;
+            font-size: 18px;
+            cursor: pointer;
+            color: #1e293b;
+            transition: 0.2s;
+        }
+        .week-selector button:hover {
+            background: #d0d9e4;
+        }
+        .week-selector span {
+            font-weight: 500;
+            min-width: 200px;
+            text-align: center;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            background: white;
+            border: 1px solid #cbd5e1;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.15s;
+            color: #1e293b;
+        }
+        .btn-primary {
+            background: #2d3c5e;
+            border-color: #2d3c5e;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #1e2a44;
+        }
+        .btn-success {
+            background: #0f6e3f;
+            border-color: #0f6e3f;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #0a5330;
+        }
+        .btn-warning {
+            background: #eab308;
+            border-color: #eab308;
+            color: #1e293b;
+        }
+        .btn-warning:hover {
+            background: #ca8a04;
+        }
+        .btn-outline-blue {
+            border-color: #94a3b8;
+            background: #ffffffdd;
+        }
+        .btn-outline-blue:hover {
+            background: #e6edf8;
+            border-color: #5f7da0;
+        }
+        .file-input-label {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        .file-input-label input {
+            position: absolute;
+            font-size: 100px;
+            opacity: 0;
+            right: 0;
+            top: 0;
+            cursor: pointer;
+        }
+        /* 表格区域 */
+        .table-section {
+            background: #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.02);
+            overflow: auto;
+            max-height: 70vh;
+            margin-bottom: 28px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 1000px;
+            font-size: 0.85rem;
+        }
+        th {
+            background: #f1f5f9;
+            color: #1e293b;
+            font-weight: 600;
+            padding: 16px 4px;
+            text-align: center;
+            border-bottom: 2px solid #cbd5e1;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        th:first-child {
+            left: 0;
+            z-index: 12;
+        }
+        td {
+            border: 1px solid #e9edf3;
+            padding: 8px 4px;
+            vertical-align: middle;
+            text-align: center;
+            background-color: white;
+        }
+        .student-name {
+            font-weight: 500;
+            background-color: #fcfdff;
+            color: #0b1d31;
+            white-space: nowrap;
+            padding: 0 6px;
+            position: sticky;
+            left: 0;
+            z-index: 5;
+        }
+        .day-cell {
+            min-width: 140px;
+            position: relative;
+        }
+        .day-header {
+            background: #e6edf8;
+        }
+        .cell-status-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            justify-content: center;
+            min-height: 48px;
+        }
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #e2e8f0;
+            border-radius: 20px;
+            padding: 4px 8px 4px 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            cursor: default;
+        }
+        .status-chip .remove-status {
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: 2px;
+            width: 14px;
+            height: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            color: white;
+            line-height: 1;
+        }
+        .status-chip .remove-status:hover {
+            background: rgba(0,0,0,0.2);
+        }
+        .add-status-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: #ecf1f7;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            color: #3b4e6b;
+            transition: 0.1s;
+            border: 1px solid #ccd8e6;
+        }
+        .add-status-btn:hover {
+            background: #d3deed;
+        }
+        .add-menu {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            padding: 8px 0;
+            z-index: 100;
+            min-width: 120px;
+            border: 1px solid #d9e2ef;
+        }
+        .add-menu div {
+            padding: 8px 18px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: 0.1s;
+            white-space: nowrap;
+            text-align: left;
+        }
+        .add-menu div:hover {
+            background: #f0f4fe;
+        }
+        /* 统计区域 */
+        .stats-section {
+            background: #f9fbfd;
+            border-radius: 28px;
+            padding: 24px 22px;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.02), 0 4px 12px rgba(0,20,40,0.04);
+        }
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .stats-header h2 {
+            margin: 0;
+            font-weight: 600;
+            color: #0f1829;
+            font-size: 1.5rem;
+        }
+        .stats-control {
+            display: flex;
+            gap: 8px;
+        }
+        .stat-tab {
+            background: white;
+            border-radius: 30px;
+            padding: 6px 18px;
+            font-size: 0.95rem;
+            border: 1px solid #dce3ec;
+            cursor: pointer;
+            user-select: none;
+            font-weight: 500;
+        }
+        .stat-tab.active {
+            background: #2d3c5e;
+            color: white;
+            border-color: #2d3c5e;
+        }
+        .filter-cats {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            background: white;
+            padding: 12px 18px;
+            border-radius: 40px;
+        }
+        .filter-cats label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #f0f4fa;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+        .filter-cats label:hover {
+            background: #e2eaf5;
+        }
+        .daily-student-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+        .daily-block {
+            background: white;
+            border-radius: 20px;
+            padding: 16px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            border-left: 6px solid #2d3c5e;
+        }
+        .daily-block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e9edf3;
+        }
+        .daily-date {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #0f1829;
+        }
+        .daily-total {
+            background: #eef2ff;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #2d3c5e;
+        }
+        .student-item {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px dashed #ecf1f7;
+        }
+        .student-item:last-child {
+            border-bottom: none;
+        }
+        .student-name-stat {
+            font-weight: 600;
+            min-width: 100px;
+            color: #1e293b;
+        }
+        .status-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .mini-tag {
+            display: inline-block;
+            background: #eef2f6;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #1e293b;
+        }
+        .mini-tag.late { background: #fef3c7; color: #b45309; }
+        .mini-tag.truant { background: #ffdede; color: #b91c1c; }
+        .mini-tag.violation { background: #ede9fe; color: #6b21a8; }
+        .mini-tag.hygiene { background: #cffafe; color: #0e7490; }
+        .mini-tag.homework { background: #ede9fe; color: #6b21a8; }
+        .mini-tag.special { background: #dcfce7; color: #166534; }
+        .empty-note {
+            color: #94a3b8;
+            text-align: center;
+            padding: 40px 20px;
+            font-style: italic;
+        }
+        .legend {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+            padding: 10px 16px;
+            background: #f2f6fc;
+            border-radius: 40px;
+            font-size: 0.8rem;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+        .footer-note {
+            color: #8192aa;
+            font-size: 0.8rem;
+            margin-top: 24px;
+            text-align: right;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 18px;
+        }
+        /* 模态框 */
+        .modal-mask {
+            position: fixed;
+            z-index: 200;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            transition: opacity 0.3s ease;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-container {
+            width: 90vw;
+            max-width: 1400px;
+            max-height: 90vh;
+            background-color: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .modal-header {
+            padding: 18px 24px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #0f1829;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #94a3b8;
+        }
+        .modal-close:hover {
+            color: #1e293b;
+        }
+        .modal-body {
+            padding: 20px 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 16px;
+            border: 1px solid #e9edf3;
+        }
+        .history-info {
+            font-size: 0.9rem;
+            color: #1e293b;
+        }
+        .history-time {
+            font-weight: 500;
+        }
+        .history-btns {
+            display: flex;
+            gap: 8px;
+        }
+        .history-btns button {
+            background: none;
+            border: 1px solid #cbd5e1;
+            border-radius: 30px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+        .history-btns .preview-btn {
+            background: #f0f4fa;
+            border-color: #94a3b8;
+            color: #2d3c5e;
+        }
+        .history-btns .load-btn {
+            background: #2d3c5e;
+            border-color: #2d3c5e;
+            color: white;
+        }
+        .history-btns .delete-btn {
+            background: white;
+            border-color: #dc2626;
+            color: #dc2626;
+        }
+        .history-btns .preview-btn:hover {
+            background: #e2e8f0;
+        }
+        .history-btns .delete-btn:hover {
+            background: #fee2e2;
+        }
+        .history-btns .load-btn:hover {
+            background: #1e2a44;
+        }
+        .empty-history {
+            text-align: center;
+            padding: 30px;
+            color: #94a3b8;
+        }
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            background: white;
+        }
+        .preview-table th {
+            background: #f1f5f9;
+            padding: 12px 4px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+        }
+        .preview-table td {
+            border: 1px solid #e9edf3;
+            padding: 8px 4px;
+            text-align: center;
+        }
+        .preview-status-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            justify-content: center;
+        }
+        .preview-tag {
+            background: #e2e8f0;
+            border-radius: 16px;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #1e293b;
+            white-space: nowrap;
+        }
+        .preview-tag.late { background: #fef3c7; color: #b45309; }
+        .preview-tag.truant { background: #ffdede; color: #b91c1c; }
+        .preview-tag.violation { background: #ede9fe; color: #6b21a8; }
+        .preview-tag.hygiene { background: #cffafe; color: #0e7490; }
+        .preview-tag.homework { background: #ede9fe; color: #6b21a8; }
+        .preview-tag.special { background: #dcfce7; color: #166534; }
+        .preview-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+        }
+        /* 设置弹窗 */
+        .settings-type-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 16px;
+            border: 1px solid #e9edf3;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        .settings-type-row .color-swatch {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .settings-type-row input[type="text"] {
+            border: 1px solid #d1d9e6;
+            border-radius: 30px;
+            padding: 6px 14px;
+            font-size: 0.85rem;
+            outline: none;
+            flex: 1;
+            min-width: 0;
+        }
+        .settings-type-row input[type="text"]:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+        }
+        .settings-type-row input.abbr-input {
+            max-width: 56px;
+            text-align: center;
+        }
+        .color-picker-popup {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 12px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+            border: 1px solid #d9e2ef;
+            max-width: 200px;
+        }
+        .color-picker-popup span {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.1s;
+        }
+        .color-picker-popup span:hover {
+            border-color: #1e293b;
+        }
+        .color-picker-popup span.active {
+            border-color: #1e293b;
+            box-shadow: 0 0 0 2px white, 0 0 0 4px #1e293b;
+        }
+        .settings-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+        }
+    </style>
+    <!-- SheetJS 用于解析 Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+<div class="app-container" id="app">
+    <h1>📋 班级周度管理 <small>支持Excel导入学生姓名</small></h1>
+    <div class="legend">
+        <div class="legend-item" v-for="t in statusTypes" :key="t.key"><span class="legend-color" :style="{backgroundColor: t.color}"></span>{{ t.label }}</div>
+        <div class="legend-item"><span class="legend-color" style="background:#10b981;"></span>备注(自定义)</div>
+    </div>
+    <div class="top-bar">
+        <div class="date-picker-area">
+            <div class="week-selector">
+                <button @click="changeWeek(-1)">←</button>
+                <span>{{ weekRangeText }}</span>
+                <button @click="changeWeek(1)">→</button>
+            </div>
+            <div style="display: flex; gap: 6px; align-items: center;">
+                <span style="color:#475569;">📅 跳转日期</span>
+                <input type="date" id="jumpDate" :value="jumpDateInput" style="padding:6px;border-radius:30px;border:1px solid #cad5e2;">
+                <button class="btn" @click="jumpToDate">跳转</button>
+            </div>
+        </div>
+        <div class="action-buttons">
+            <label class="btn btn-primary file-input-label">
+                📂 导入学生名单
+                <input type="file" accept=".xlsx, .xls, .csv, .xlsm" @change="importStudentList">
+            </label>
+            <button class="btn btn-success" @click="saveSnapshot">💿 保存快照</button>
+            <button class="btn btn-warning" @click="clearCurrentWeekConfirm">🗑️ 清空本周</button>
+            <button class="btn btn-outline-blue" @click="openHistoryModal">📜 历史记录</button>
+            <button class="btn btn-outline-blue" @click="exportToCSV">📥 导出CSV</button>
+            <button class="btn btn-outline-blue" @click="openSettings">⚙️ 自定义扣分项</button>
+            <button class="btn btn-outline-blue" @click="resetToDefault">📂 重置示例</button>
+        </div>
+    </div>
+
+    <!-- 记录表格 -->
+    <div class="table-section">
+        <table>
+            <thead>
+                <tr>
+                    <th style="min-width:90px;">学生</th>
+                    <th v-for="(day, idx) in weekDays" :key="idx" class="day-header">
+                        {{ day }} <span style="font-weight:400; display:block; font-size:0.7rem;">{{ getDateStr(idx) }}</span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="student in studentList" :key="student">
+                    <td class="student-name">{{ student }}</td>
+                    <td v-for="(day, colIdx) in weekDays" :key="colIdx" class="day-cell" @click.self="closeAllMenus">
+                        <div class="cell-status-container">
+                            <template v-for="(status, sIdx) in cellStatuses(student, colIdx)">
+                                <span class="status-chip" :style="{backgroundColor: status.color}" :key="sIdx">
+                                    {{ status.abbr }}<span v-if="status.key==='special' && status.shortNote">:{{ status.shortNote }}</span>
+                                    <span class="remove-status" @click.stop="removeStatus(student, colIdx, sIdx)">✕</span>
+                                </span>
+                            </template>
+                            <span class="add-status-btn" @click.stop="toggleAddMenu(student, colIdx)">+</span>
+                            <div v-if="addMenuCell === cellKey(student, colIdx)" class="add-menu" @click.stop>
+                                <div v-for="st in statusTypes" :key="st.key" @click="addStatus(student, colIdx, st.key)">
+                                    {{ st.label }}
+                                </div>
+                                <div @click="addRemark(student, colIdx)">备注(自定义)...</div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 统计区域：按日展示特殊情况学生 -->
+    <div class="stats-section">
+        <div class="stats-header">
+            <h2>📊 特殊情况学生 · 按日统计</h2>
+            <div class="stats-control">
+                <span class="stat-tab" :class="{active: statMode === 'day'}" @click="statMode = 'day'">按日</span>
+                <span class="stat-tab" :class="{active: statMode === 'week'}" @click="statMode = 'week'">本周</span>
+                <span class="stat-tab" :class="{active: statMode === 'month'}" @click="statMode = 'month'">本月</span>
+            </div>
+        </div>
+        <div class="filter-cats">
+            <label v-for="cat in statCategories" :key="cat.key">
+                <input type="checkbox" v-model="selectedStatCats" :value="cat.key"> {{ cat.label }}
+            </label>
+        </div>
+        <div class="daily-student-list" v-if="dailySpecialStudents.length">
+            <div v-for="dayInfo in dailySpecialStudents" :key="dayInfo.dateStr" class="daily-block">
+                <div class="daily-block-header">
+                    <span class="daily-date">{{ dayInfo.weekdayName }} {{ dayInfo.dateStr }}</span>
+                    <span class="daily-total">{{ dayInfo.totalCount }} 人次</span>
+                </div>
+                <div v-for="item in dayInfo.students" :key="item.student" class="student-item">
+                    <div class="student-name-stat">{{ item.student }}</div>
+                    <div class="status-tags">
+                        <span v-for="st in item.statuses" :key="st.text" :class="['mini-tag', st.type]">
+                            {{ st.text }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div v-else class="empty-note">
+            ✨ 所选周期内无符合条件的学生记录（可调整上方分类筛选）
+        </div>
+    </div>
+    <!-- 小组扣分统计 -->
+    <div class="stats-section" style="margin-top: 20px;">
+        <div class="stats-header">
+            <h2>🏆 小组扣分统计 · 本周</h2>
+        </div>
+        <div v-if="Object.keys(studentGroups).length">
+            <div v-if="groupDeductions.length" style="overflow-x: auto;">
+                <table style="min-width:500px;">
+                    <thead>
+                        <tr>
+                            <th style="min-width:50px;">排名</th>
+                            <th style="min-width:100px;">小组</th>
+                            <th style="min-width:70px;">总扣分</th>
+                            <th style="min-width:50px;">迟到</th>
+                            <th style="min-width:50px;">旷课</th>
+                            <th style="min-width:50px;">违纪</th>
+                            <th style="min-width:50px;">卫生</th>
+                            <th style="min-width:50px;">作业</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(g, idx) in groupDeductions" :key="g.name">
+                            <td style="font-weight:600;">#{{ idx + 1 }}</td>
+                            <td style="font-weight:600;">{{ g.name }}</td>
+                            <td style="font-weight:700;font-size:1.1rem;color:#0f1829;">{{ g.totalDeductions }}</td>
+                            <td>{{ g.breakdown['late'] || 0 }}</td>
+                            <td>{{ g.breakdown['truant'] || 0 }}</td>
+                            <td>{{ g.breakdown['violation'] || 0 }}</td>
+                            <td>{{ g.breakdown['hygiene'] || 0 }}</td>
+                            <td>{{ g.breakdown['homework'] || 0 }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div v-else class="empty-note">
+            ✨ 暂无小组数据。请通过 Excel 导入时在第二列标注小组名（第一列姓名、第二列组名）。
+        </div>
+    </div>
+
+    <div class="footer-note">
+        ⏱️ 点击➕添加状态，点击标签✕移除 · "保存快照"可将当前所有数据存为历史版本，"清空本周"仅清除当前显示周的数据。导入Excel会替换整个学生名单并清空记录。
+    </div>
+
+    <!-- 历史记录模态框 -->
+    <div v-if="showHistoryModal" class="modal-mask" @click.self="showHistoryModal = false">
+        <div class="modal-container" style="width: 600px;">
+            <div class="modal-header">
+                <h3>历史快照记录</h3>
+                <button class="modal-close" @click="showHistoryModal = false">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="history-list" v-if="historyList.length">
+                    <div v-for="(item, idx) in historyList" :key="idx" class="history-item">
+                        <div class="history-info">
+                            <div class="history-time">{{ item.time }}</div>
+                            <div style="font-size:0.7rem; color:#64748b;">{{ item.desc }}</div>
+                        </div>
+                        <div class="history-btns">
+                            <button class="preview-btn" @click="previewSnapshot(item)">预览</button>
+                            <button class="load-btn" @click="loadSnapshot(idx)">加载</button>
+                            <button class="delete-btn" @click="deleteSnapshot(idx)">删除</button>
+                        </div>
+                    </div>
+                </div>
+                <div v-else class="empty-history">
+                    暂无历史快照，点击“保存快照”创建备份。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 预览模态框 -->
+    <div v-if="showPreviewModal" class="modal-mask" @click.self="closePreview">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>历史快照预览 · {{ previewSnapshotTime }}</h3>
+                <button class="modal-close" @click="closePreview">&times;</button>
+            </div>
+            <div class="modal-body" style="overflow-x: auto;">
+                <table class="preview-table">
+                    <thead>
+                        <tr>
+                            <th>学生</th>
+                            <th v-for="(day, idx) in weekDays" :key="idx">
+                                {{ day }} <span style="font-size:0.7rem;">{{ getDateStr(idx) }}</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="student in studentList" :key="student">
+                            <td class="student-name-col" style="font-weight:600;">{{ student }}</td>
+                            <td v-for="colIdx in 7" :key="colIdx" style="text-align:center;">
+                                <div class="preview-status-list">
+                                    <template v-if="previewSnapshotData">
+                                        <span v-for="st in getPreviewStatuses(student, colIdx-1)" :key="st.text" :class="['preview-tag', st.type]">
+                                            {{ st.text }}
+                                        </span>
+                                    </template>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="preview-actions">
+                    <button class="btn btn-primary" @click="loadCurrentPreview">加载此快照</button>
+                    <button class="btn btn-outline-blue" @click="closePreview">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自定义扣分项设置弹窗 -->
+    <div v-if="showSettingsModal" class="modal-mask" @click.self="showSettingsModal = false">
+        <div class="modal-container" style="width:600px;">
+            <div class="modal-header">
+                <h3>⚙️ 自定义扣分项</h3>
+                <button class="modal-close" @click="showSettingsModal = false">&times;</button>
+            </div>
+            <div class="modal-body" @click.self="showColorPicker = null">
+                <div style="background:#f0f4fe;border-radius:18px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                    <span style="font-weight:600;color:#1e293b;font-size:0.9rem;">📅 每周起始日</span>
+                    <select v-model="editingWeekStartDay" style="padding:6px 14px;border-radius:30px;border:1px solid #cbd5e1;background:white;font-size:0.9rem;outline:none;">
+                        <option :value="0">周日</option>
+                        <option :value="1">周一</option>
+                        <option :value="2">周二</option>
+                        <option :value="3">周三</option>
+                        <option :value="4">周四</option>
+                        <option :value="5">周五</option>
+                        <option :value="6">周六</option>
+                    </select>
+                    <span style="color:#64748b;font-size:0.8rem;">当前为 <strong>{{ weekDays[editingWeekStartDay] }}</strong> ～ 下{{ weekDays[(editingWeekStartDay + 6) % 7] }}</span>
+                </div>
+                <p style="color:#64748b;font-size:0.85rem;margin-bottom:16px;">修改扣分项的名称、缩写和颜色，修改后会自动应用到表格和统计中。</p>
+                <div v-for="(t, idx) in editingStatusTypes" :key="t._tempKey || t.key" class="settings-type-row">
+                    <span class="color-swatch" :style="{backgroundColor: t.color}" @click="toggleColorPicker(idx)"></span>
+                    <div v-if="showColorPicker === idx" class="color-picker-popup" style="position:absolute;z-index:300;margin-top:34px;" @click.stop>
+                        <span v-for="c in presetColors" :key="c" :style="{backgroundColor: c}" :class="{active: c === t.color}" @click="setTypeColor(idx, c)"></span>
+                    </div>
+                    <input type="text" v-model="t.label" placeholder="名称，如上课睡觉" style="flex:2;">
+                    <input type="text" class="abbr-input" v-model="t.abbr" placeholder="缩写" maxlength="2" style="max-width:50px;text-align:center;">
+                    <button class="btn" style="border-color:#dc2626;color:#dc2626;padding:4px 12px;font-size:0.75rem;" @click="removeCustomType(idx)">删除</button>
+                </div>
+                <button class="btn btn-primary" @click="addCustomType" style="margin-top:8px;">＋ 添加扣分项</button>
+                <div class="settings-actions">
+                    <button class="btn btn-outline-blue" @click="resetCustomTypes">重置为默认</button>
+                    <button class="btn btn-success" @click="saveCustomTypes">💾 保存设置</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+<script>
+    (function(){
+        // 默认学生名单（用于重置示例）
+        const defaultStudentArray = [
+            "陈静","高飞","郭靖","何雨","胡亮","黄丽","林潇","刘洋","罗琳","马超","孙悦","王芳","吴敏","徐明","杨帆","张伟","赵磊","郑浩","周杰","朱婷"
+        ];
+
+        const defaultStudentGroups = {
+            "张伟":"你说的都队","王芳":"你说的都队","刘洋":"你说的都队","陈静":"你说的都队",
+            "杨帆":"深藏BLUE","赵磊":"深藏BLUE","黄丽":"深藏BLUE","周杰":"深藏BLUE",
+            "吴敏":"发际线保卫队","徐明":"发际线保卫队","孙悦":"发际线保卫队","马超":"发际线保卫队",
+            "朱婷":"专业团队","胡亮":"专业团队","郭靖":"专业团队","林潇":"专业团队",
+            "何雨":"怎么敢跟我们作队","高飞":"怎么敢跟我们作队","罗琳":"怎么敢跟我们作队","郑浩":"怎么敢跟我们作队"
+        };
+
+        const SPECIAL_COLOR = '#10b981';
+        const SPECIAL_ABBR = '备';
+        const STATUS_TYPES_STORAGE_KEY = 'class_status_types';
+        const PRESET_COLORS = ['#f59e0b','#b91c1c','#8b5cf6','#0891b2','#7c3aed','#ef4444','#3b82f6','#10b981','#e11d48','#d946ef','#14b8a6','#f97316'];
+        const ALL_DAY_NAMES = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+
+        function getDefaultStatusTypes() {
+            return [
+                { key: 'late', label: '迟到', color: '#f59e0b', abbr: '迟' },
+                { key: 'truant', label: '旷课', color: '#b91c1c', abbr: '旷' },
+                { key: 'violation', label: '违反纪律', color: '#8b5cf6', abbr: '违' },
+                { key: 'hygiene', label: '卫生扣分', color: '#0891b2', abbr: '卫' },
+                { key: 'homework', label: '作业扣分', color: '#7c3aed', abbr: '作' }
+            ];
+        }
+
+        function parseCellString(text, statusTypes) {
+            if (!text || !text.trim()) return [];
+            const parts = text.split(/[;,、]/).map(p => p.trim()).filter(p => p);
+            const result = [];
+            for (let part of parts) {
+                if (part.startsWith('备注:')) {
+                    const noteContent = part.substring(3).trim() || '备注';
+                    result.push({
+                        key: 'special',
+                        text: part,
+                        shortNote: noteContent.length>6 ? noteContent.slice(0,4)+'…' : noteContent,
+                        color: SPECIAL_COLOR,
+                        abbr: SPECIAL_ABBR,
+                        type: 'special'
+                    });
+                    continue;
+                }
+                let matched = null;
+                for (let st of statusTypes) {
+                    if (st.key === 'late' && part.includes('迟到')) { matched = st; break; }
+                    if (st.key === 'truant' && (part.includes('旷课'))) { matched = st; break; }
+                    if (st.key === 'violation' && (part.includes('违纪') || part.includes('违反纪律'))) { matched = st; break; }
+                    if (st.key === 'hygiene' && (part.includes('卫生'))) { matched = st; break; }
+                    if (st.key === 'homework' && (part.includes('作业'))) { matched = st; break; }
+                }
+                if (matched) {
+                    result.push({
+                        key: matched.key,
+                        text: part,
+                        color: matched.color,
+                        abbr: matched.abbr,
+                        type: matched.key
+                    });
+                } else {
+                    result.push({
+                        key: 'special',
+                        text: part,
+                        shortNote: part.length>6 ? part.slice(0,4)+'…' : part,
+                        color: SPECIAL_COLOR,
+                        abbr: SPECIAL_ABBR,
+                        type: 'special'
+                    });
+                }
+            }
+            return result;
+        }
+
+        function buildCellString(statusList) {
+            return statusList.map(s => s.text).join('; ');
+        }
+
+        // 根据学生列表生成空记录对象
+        function generateEmptyRecordsForStudents(students) {
+            const rec = {};
+            students.forEach(s => {
+                for (let d = 0; d < 7; d++) {
+                    rec[`${s}-${d}`] = '';
+                }
+            });
+            // 可选添加几个演示数据（首学生迟到等）
+            if (students.length > 0) {
+                rec[`${students[0]}-0`] = '迟到';
+                if (students[1]) rec[`${students[1]}-1`] = '旷课';
+            }
+            return rec;
+        }
+
+        // 生成默认示例数据（使用默认名单）
+        function generateExampleRecords() {
+            const rec = {};
+            // 先全部置空
+            for (let s of defaultStudentArray) {
+                for (let d = 0; d < 7; d++) {
+                    rec[`${s}-${d}`] = '';
+                }
+            }
+            // 演示数据：col 0=周四, 1=周五, 2=周六, 3=周日, 4=周一, 5=周二, 6=周三
+            // 你说的都队
+            rec['张伟-0'] = '迟到';
+            rec['张伟-4'] = '作业扣分';
+            rec['王芳-1'] = '卫生扣分; 作业扣分';
+            rec['王芳-3'] = '迟到';
+            rec['刘洋-2'] = '违反纪律';
+            rec['刘洋-5'] = '作业扣分';
+            // 深藏BLUE（扣分最多）
+            rec['杨帆-0'] = '旷课; 违反纪律';
+            rec['杨帆-3'] = '迟到';
+            rec['杨帆-6'] = '作业扣分';
+            rec['赵磊-2'] = '作业扣分; 作业扣分';
+            rec['赵磊-4'] = '卫生扣分';
+            rec['黄丽-1'] = '迟到';
+            rec['黄丽-5'] = '作业扣分';
+            rec['周杰-0'] = '卫生扣分';
+            rec['周杰-3'] = '旷课';
+            // 发际线保卫队
+            rec['吴敏-1'] = '迟到';
+            rec['吴敏-4'] = '作业扣分';
+            rec['徐明-3'] = '作业扣分; 作业扣分';
+            rec['徐明-5'] = '违反纪律';
+            rec['孙悦-5'] = '作业扣分';
+            rec['马超-0'] = '迟到; 作业扣分';
+            rec['马超-4'] = '卫生扣分';
+            // 专业团队（扣分最少）
+            rec['朱婷-0'] = '迟到';
+            rec['胡亮-2'] = '违反纪律';
+            rec['郭靖-1'] = '迟到';
+            rec['林潇-3'] = '作业扣分';
+            // 怎么敢跟我们作队
+            rec['何雨-0'] = '作业扣分';
+            rec['何雨-4'] = '旷课';
+            rec['高飞-2'] = '迟到';
+            rec['高飞-5'] = '作业扣分';
+            rec['罗琳-2'] = '迟到; 旷课';
+            rec['郑浩-4'] = '卫生扣分';
+            return rec;
+        }
+
+        function getStartOfWeek(date, startDay) {
+            const d = new Date(date);
+            d.setHours(0, 0, 0, 0);
+            const day = d.getDay();
+            const diff = (day + 7 - startDay) % 7;
+            d.setDate(d.getDate() - diff);
+            return d;
+        }
+
+        function formatDate(d) {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function parseLocalDate(dateStr) {
+            const parts = dateStr.split('-');
+            if (parts.length !== 3) return null;
+            return new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+        }
+
+        const HISTORY_KEY = 'class_history_snapshots';
+        function loadHistoryFromStorage() {
+            const stored = localStorage.getItem(HISTORY_KEY);
+            if (stored) {
+                try {
+                    return JSON.parse(stored);
+                } catch(e) { return []; }
+            }
+            return [];
+        }
+        function saveHistoryToStorage(history) {
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        }
+
+        new Vue({
+            el: '#app',
+            data: {
+                studentList: [...defaultStudentArray],
+                currentWeekStart: new Date(),
+                records: {},
+                statusTypes: getDefaultStatusTypes(),
+                weekStartDay: 4,
+                addMenuCell: null,
+                jumpDateInput: formatDate(new Date()),
+                statMode: 'day',
+                selectedStatCats: ['late', 'truant', 'violation', 'hygiene', 'homework', 'special'],
+                showHistoryModal: false,
+                historyList: [],
+                showPreviewModal: false,
+                previewSnapshotData: null,
+                previewSnapshotTime: '',
+                studentGroups: {},
+                showSettingsModal: false,
+                editingStatusTypes: [],
+                editingWeekStartDay: 4,
+                showColorPicker: null,
+                presetColors: PRESET_COLORS,
+            },
+            computed: {
+                weekDays() {
+                    const days = [];
+                    for (let i = 0; i < 7; i++) {
+                        days.push(ALL_DAY_NAMES[(this.weekStartDay + i) % 7]);
+                    }
+                    return days;
+                },
+                weekRangeText() {
+                    const start = this.currentWeekStart;
+                    const end = new Date(start);
+                    end.setDate(start.getDate() + 6);
+                    return `${formatDate(start)}  ~  ${formatDate(end)}`;
+                },
+                selectedKeys() {
+                    return new Set(this.selectedStatCats);
+                },
+                statCategories() {
+                    const cats = this.statusTypes.map(t => ({ key: t.key, label: t.label }));
+                    cats.push({ key: 'special', label: '特殊情况备注' });
+                    return cats;
+                },
+                dailySpecialStudents() {
+                    const weekStart = this.currentWeekStart;
+                    let startDate, endDate;
+                    if (this.statMode === 'day') {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        startDate = today;
+                        endDate = today;
+                    } else if (this.statMode === 'week') {
+                        startDate = new Date(weekStart);
+                        endDate = new Date(weekStart);
+                        endDate.setDate(weekStart.getDate() + 6);
+                    } else {
+                        const refDate = new Date(weekStart);
+                        refDate.setDate(weekStart.getDate() + 3);
+                        const year = refDate.getFullYear();
+                        const month = refDate.getMonth();
+                        startDate = new Date(year, month, 1);
+                        endDate = new Date(year, month + 1, 0);
+                    }
+                    const startNum = new Date(startDate).setHours(0,0,0,0);
+                    const endNum = new Date(endDate).setHours(0,0,0,0);
+
+                    const dateMap = new Map();
+                    let current = new Date(startDate);
+                    while (current <= endDate) {
+                        const dateStr = formatDate(current);
+                        const weekdayIdx = current.getDay();
+                        const weekdayName = ALL_DAY_NAMES[weekdayIdx];
+                        dateMap.set(dateStr, {
+                            dateStr: dateStr,
+                            weekdayName: weekdayName,
+                            students: [],
+                            totalCount: 0
+                        });
+                        current.setDate(current.getDate() + 1);
+                    }
+
+                    for (let s of this.studentList) {
+                        for (let col = 0; col < 7; col++) {
+                            const cellDate = new Date(weekStart);
+                            cellDate.setDate(weekStart.getDate() + col);
+                            const cellDateNum = cellDate.setHours(0,0,0,0);
+                            if (cellDateNum < startNum || cellDateNum > endNum) continue;
+                            const dateStr = formatDate(cellDate);
+                            const cellKey = `${s}-${col}`;
+                            const cellText = this.records[cellKey] || '';
+                            if (!cellText.trim()) continue;
+                            const statusList = parseCellString(cellText, this.statusTypes);
+                            const filteredStatuses = statusList.filter(st => this.selectedKeys.has(st.key));
+                            if (filteredStatuses.length === 0) continue;
+                            const dayInfo = dateMap.get(dateStr);
+                            if (dayInfo) {
+                                let existing = dayInfo.students.find(item => item.student === s);
+                                if (existing) {
+                                    const existingTexts = new Set(existing.statuses.map(st => st.text));
+                                    for (let st of filteredStatuses) {
+                                        if (!existingTexts.has(st.text)) {
+                                            existing.statuses.push(st);
+                                        }
+                                    }
+                                } else {
+                                    dayInfo.students.push({
+                                        student: s,
+                                        statuses: filteredStatuses
+                                    });
+                                }
+                                dayInfo.totalCount += filteredStatuses.length;
+                            }
+                        }
+                    }
+                    return Array.from(dateMap.values()).filter(d => d.students.length > 0).sort((a,b) => a.dateStr.localeCompare(b.dateStr));
+                },
+                groupDeductions() {
+                    const weekStart = this.currentWeekStart;
+                    const startDate = new Date(weekStart);
+                    startDate.setHours(0, 0, 0, 0);
+                    const endDate = new Date(weekStart);
+                    endDate.setDate(weekStart.getDate() + 6);
+                    endDate.setHours(23, 59, 59, 999);
+
+                    const groups = {};
+                    for (let student of this.studentList) {
+                        const group = this.studentGroups[student] || '未分组';
+                        if (!groups[group]) {
+                            groups[group] = { name: group, students: [], totalDeductions: 0, breakdown: { late: 0, truant: 0, violation: 0, hygiene: 0, homework: 0 } };
+                        }
+                        groups[group].students.push(student);
+                    }
+
+                    for (let g of Object.values(groups)) {
+                        for (let student of g.students) {
+                            for (let col = 0; col < 7; col++) {
+                                const cellDate = new Date(weekStart);
+                                cellDate.setDate(weekStart.getDate() + col);
+                                const cellDateNum = cellDate.setHours(0,0,0,0);
+                                if (cellDateNum < startDate.getTime() || cellDateNum > endDate.getTime()) continue;
+                                const key = `${student}-${col}`;
+                                const text = this.records[key] || '';
+                                if (!text.trim()) continue;
+                                const statusList = parseCellString(text, this.statusTypes);
+                                const deductionStatuses = statusList.filter(st =>
+                                    st.key === 'late' || st.key === 'truant' || st.key === 'violation' || st.key === 'hygiene' || st.key === 'homework'
+                                );
+                                for (let st of deductionStatuses) {
+                                    g.totalDeductions++;
+                                    if (g.breakdown[st.key] !== undefined) g.breakdown[st.key]++;
+                                }
+                            }
+                        }
+                    }
+
+                    return Object.values(groups).sort((a, b) => a.totalDeductions - b.totalDeductions);
+                }
+            },
+            watch: {
+                records: {
+                    handler() {
+                        localStorage.setItem('class_week_records', JSON.stringify(this.records));
+                    },
+                    deep: true
+                }
+            },
+            created() {
+                // 加载周起始日配置
+                const savedWeekStart = localStorage.getItem('class_week_start_day');
+                if (savedWeekStart !== null) {
+                    const parsed = parseInt(savedWeekStart, 10);
+                    if (parsed >= 0 && parsed <= 6) this.weekStartDay = parsed;
+                }
+                this.currentWeekStart = getStartOfWeek(new Date(), this.weekStartDay);
+                // 加载自定义扣分项
+                const savedTypes = localStorage.getItem(STATUS_TYPES_STORAGE_KEY);
+                if (savedTypes) {
+                    try {
+                        const parsed = JSON.parse(savedTypes);
+                        if (parsed && parsed.length > 0) {
+                            this.statusTypes = parsed;
+                        }
+                    } catch(e) {}
+                }
+                const saved = localStorage.getItem('class_week_records');
+                if (saved) {
+                    try {
+                        const parsed = JSON.parse(saved);
+                        // 检查本地数据是否与当前学生名单匹配
+                        const currentNames = new Set(this.studentList);
+                        const hasMatchingData = Object.keys(parsed).some(key => {
+                            const name = key.split('-')[0];
+                            return currentNames.has(name) && parsed[key];
+                        });
+                        if (hasMatchingData) {
+                            this.records = parsed;
+                        } else {
+                            // 数据不匹配（旧版数据或学生名单已变）→ 用演示数据
+                            this.records = generateExampleRecords();
+                        }
+                    } catch (e) {
+                        this.records = generateEmptyRecordsForStudents(this.studentList);
+                    }
+                } else {
+                    // 首次使用 → 用演示数据
+                    this.records = generateExampleRecords();
+                }
+                this.historyList = loadHistoryFromStorage();
+                const savedGroups = localStorage.getItem('class_student_groups');
+                if (savedGroups) {
+                    try {
+                        const parsed = JSON.parse(savedGroups);
+                        // 同样检查分组是否匹配当前学生
+                        const currentNames = new Set(this.studentList);
+                        const hasMatchingGroup = Object.keys(parsed).some(name => currentNames.has(name));
+                        if (hasMatchingGroup) {
+                            this.studentGroups = parsed;
+                        } else {
+                            this.studentGroups = {...defaultStudentGroups};
+                        }
+                    } catch(e) { this.studentGroups = {...defaultStudentGroups}; }
+                } else {
+                    this.studentGroups = {...defaultStudentGroups};
+                }
+                document.addEventListener('click', this.handleClickOutside);
+            },
+            beforeDestroy() {
+                document.removeEventListener('click', this.handleClickOutside);
+            },
+            methods: {
+                handleClickOutside(e) {
+                    if (!e.target.closest('.add-menu') && !e.target.closest('.add-status-btn')) {
+                        this.addMenuCell = null;
+                    }
+                },
+                cellKey(student, colIdx) {
+                    return `${student}-${colIdx}`;
+                },
+                getDateStr(colIdx) {
+                    const d = new Date(this.currentWeekStart);
+                    d.setDate(this.currentWeekStart.getDate() + colIdx);
+                    return formatDate(d);
+                },
+                cellStatuses(student, colIdx) {
+                    const key = this.cellKey(student, colIdx);
+                    const text = this.records[key] || '';
+                    return parseCellString(text, this.statusTypes);
+                },
+                toggleAddMenu(student, colIdx) {
+                    const key = this.cellKey(student, colIdx);
+                    if (this.addMenuCell === key) {
+                        this.addMenuCell = null;
+                    } else {
+                        this.addMenuCell = key;
+                    }
+                },
+                closeAllMenus() {
+                    this.addMenuCell = null;
+                },
+                addStatus(student, colIdx, statusKey) {
+                    const key = this.cellKey(student, colIdx);
+                    const currentList = parseCellString(this.records[key] || '', this.statusTypes);
+                    const status = this.statusTypes.find(s => s.key === statusKey);
+                    const newItem = {
+                        key: status.key,
+                        text: status.label,
+                        color: status.color,
+                        abbr: status.abbr,
+                        type: status.key
+                    };
+                    currentList.push(newItem);
+                    this.records[key] = buildCellString(currentList);
+                    this.addMenuCell = null;
+                },
+                addRemark(student, colIdx) {
+                    const note = prompt('输入备注内容 (例如: 家长会、病假三天等)');
+                    if (note === null) return;
+                    const key = this.cellKey(student, colIdx);
+                    const currentList = parseCellString(this.records[key] || '', this.statusTypes);
+                    const noteText = note.trim() || '备注';
+                    const newItem = {
+                        key: 'special',
+                        text: '备注:' + noteText,
+                        shortNote: noteText.length>6 ? noteText.slice(0,4)+'…' : noteText,
+                        color: SPECIAL_COLOR,
+                        abbr: SPECIAL_ABBR,
+                        type: 'special'
+                    };
+                    currentList.push(newItem);
+                    this.records[key] = buildCellString(currentList);
+                    this.addMenuCell = null;
+                },
+                removeStatus(student, colIdx, statusIdx) {
+                    const key = this.cellKey(student, colIdx);
+                    let currentList = parseCellString(this.records[key] || '', this.statusTypes);
+                    currentList.splice(statusIdx, 1);
+                    this.records[key] = buildCellString(currentList);
+                },
+                changeWeek(delta) {
+                    const newStart = new Date(this.currentWeekStart);
+                    newStart.setDate(newStart.getDate() + delta * 7);
+                    this.currentWeekStart = getStartOfWeek(newStart, this.weekStartDay);
+                    this.jumpDateInput = formatDate(this.currentWeekStart);
+                    this.addMenuCell = null;
+                },
+                jumpToDate() {
+                    const inp = document.getElementById('jumpDate').value;
+                    if (inp) {
+                        const d = parseLocalDate(inp);
+                        if (d && !isNaN(d.getTime())) {
+                            this.currentWeekStart = getStartOfWeek(d, this.weekStartDay);
+                            this.jumpDateInput = formatDate(this.currentWeekStart);
+                            this.addMenuCell = null;
+                        } else {
+                            alert('日期无效');
+                        }
+                    }
+                },
+                saveCurrentWeek() {
+                    localStorage.setItem('class_week_records', JSON.stringify(this.records));
+                    alert('本周记录已保存到浏览器');
+                },
+                saveSnapshot() {
+                    const now = new Date();
+                    const timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+                    const snapshot = {
+                        time: timeStr,
+                        desc: `快照 ${timeStr} (${this.studentList.length}人)`,
+                        records: JSON.parse(JSON.stringify(this.records))
+                    };
+                    this.historyList.unshift(snapshot);
+                    if (this.historyList.length > 20) this.historyList.pop();
+                    saveHistoryToStorage(this.historyList);
+                    alert('已保存当前数据为历史快照');
+                },
+                openHistoryModal() {
+                    this.historyList = loadHistoryFromStorage();
+                    this.showHistoryModal = true;
+                },
+                loadSnapshot(index) {
+                    if (confirm('加载历史记录将替换当前所有数据，未保存的修改将丢失。确定继续吗？')) {
+                        const snapshot = this.historyList[index];
+                        if (snapshot && snapshot.records) {
+                            this.records = JSON.parse(JSON.stringify(snapshot.records));
+                            // 注意：历史记录的records是基于当时的学生名单，如果当前学生名单不同，可能导致部分学生无数据显示
+                            // 为了避免错误，我们更新学生列表为快照中records的键名解析？但比较麻烦，简单提醒
+                            localStorage.setItem('class_week_records', JSON.stringify(this.records));
+                            alert('已加载历史快照，请注意学生名单与当时可能不一致');
+                            this.showHistoryModal = false;
+                        }
+                    }
+                },
+                deleteSnapshot(index) {
+                    if (confirm('确定删除此历史记录？')) {
+                        this.historyList.splice(index, 1);
+                        saveHistoryToStorage(this.historyList);
+                    }
+                },
+                previewSnapshot(snapshot) {
+                    this.previewSnapshotData = snapshot.records;
+                    this.previewSnapshotTime = snapshot.time;
+                    this.showPreviewModal = true;
+                    this.showHistoryModal = false;
+                },
+                closePreview() {
+                    this.showPreviewModal = false;
+                    this.previewSnapshotData = null;
+                    this.previewSnapshotTime = '';
+                },
+                loadCurrentPreview() {
+                    if (confirm('加载此快照将替换当前所有数据，未保存的修改将丢失。确定继续吗？')) {
+                        if (this.previewSnapshotData) {
+                            this.records = JSON.parse(JSON.stringify(this.previewSnapshotData));
+                            localStorage.setItem('class_week_records', JSON.stringify(this.records));
+                            alert('已加载预览中的历史快照');
+                            this.closePreview();
+                        }
+                    }
+                },
+                getPreviewStatuses(student, colIdx) {
+                    if (!this.previewSnapshotData) return [];
+                    const key = `${student}-${colIdx}`;
+                    const text = this.previewSnapshotData[key] || '';
+                    return parseCellString(text, this.statusTypes);
+                },
+                clearCurrentWeekConfirm() {
+                    if (confirm('⚠️ 清空当前周数据将删除本周所有学生的所有记录，无法撤销。确定清空吗？')) {
+                        for (let student of this.studentList) {
+                            for (let col = 0; col < 7; col++) {
+                                const key = `${student}-${col}`;
+                                this.$set(this.records, key, '');
+                            }
+                        }
+                        alert('当前周已清空');
+                    }
+                },
+                // 导入 Excel 学生名单
+                async importStudentList(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    const fileExt = file.name.split('.').pop().toLowerCase();
+                    if (!['xlsx', 'xls', 'csv', 'xlsm'].includes(fileExt)) {
+                        alert('请上传 Excel 或 CSV 文件');
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const data = e.target.result;
+                        let workbook;
+                        if (fileExt === 'csv') {
+                            // CSV 直接解析字符串
+                            const csvStr = data;
+                            const rows = csvStr.split(/\r?\n/);
+                            const names = [];
+                            const groups = {};
+                            for (let row of rows) {
+                                let cells = row.split(',');
+                                let firstCell = cells[0].trim().replace(/^["']|["']$/g, '');
+                                if (firstCell && !firstCell.startsWith('学生') && !firstCell.startsWith('姓名')) {
+                                    names.push(firstCell);
+                                    let secondCell = cells[1] ? cells[1].trim().replace(/^["']|["']$/g, '') : '';
+                                    if (secondCell) {
+                                        groups[firstCell] = secondCell;
+                                    }
+                                }
+                            }
+                            if (names.length === 0) {
+                                alert('未从CSV中读取到有效姓名（第一列）');
+                                return;
+                            }
+                            this.applyNewStudentList(names, groups);
+                        } else {
+                            // 解析 Excel
+                            const binary = new Uint8Array(data);
+                            workbook = XLSX.read(binary, { type: 'array' });
+                            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                            const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
+                            if (!rows || rows.length === 0) {
+                                alert('Excel 文件无数据');
+                                return;
+                            }
+                            const names = [];
+                            const groups = {};
+                            for (let i = 0; i < rows.length; i++) {
+                                let firstCell = rows[i][0];
+                                if (firstCell && typeof firstCell === 'string') firstCell = firstCell.trim();
+                                else if (firstCell && typeof firstCell === 'number') firstCell = String(firstCell);
+                                if (firstCell && !firstCell.startsWith('学生') && !firstCell.startsWith('姓名')) {
+                                    names.push(firstCell);
+                                    let secondCell = rows[i][1];
+                                    if (secondCell && typeof secondCell === 'string') secondCell = secondCell.trim();
+                                    else if (secondCell && typeof secondCell === 'number') secondCell = String(secondCell);
+                                    if (secondCell) {
+                                        groups[firstCell] = secondCell;
+                                    }
+                                }
+                            }
+                            if (names.length === 0) {
+                                alert('未从Excel第一列读取到有效姓名');
+                                return;
+                            }
+                            this.applyNewStudentList(names, groups);
+                        }
+                    };
+                    if (fileExt === 'csv') {
+                        reader.readAsText(file, 'UTF-8');
+                    } else {
+                        reader.readAsArrayBuffer(file);
+                    }
+                    // 清空 input value 以便再次上传同一个文件
+                    event.target.value = '';
+                },
+                applyNewStudentList(newNames, groups) {
+                    // 去重并过滤空字符串
+                    let uniqueNames = [...new Set(newNames.filter(n => n && n.trim() !== ''))];
+                    if (uniqueNames.length === 0) {
+                        alert('学生名单为空');
+                        return;
+                    }
+                    if (confirm(`导入将替换当前学生名单（当前 ${this.studentList.length} 人 → ${uniqueNames.length} 人），且会清空所有周次记录，历史快照不受影响。是否继续？`)) {
+                        this.studentList = uniqueNames;
+                        // 重置 records 为新名单的空记录
+                        this.records = generateEmptyRecordsForStudents(this.studentList);
+                        localStorage.setItem('class_week_records', JSON.stringify(this.records));
+                        // 处理分组信息
+                        if (groups && Object.keys(groups).length > 0) {
+                            this.studentGroups = {};
+                            for (let name of uniqueNames) {
+                                if (groups[name]) {
+                                    this.studentGroups[name] = groups[name];
+                                }
+                            }
+                            localStorage.setItem('class_student_groups', JSON.stringify(this.studentGroups));
+                            alert(`成功导入 ${uniqueNames.length} 名学生（含 ${Object.keys(this.studentGroups).length} 人分组信息），所有记录已清空。`);
+                        } else {
+                            alert(`成功导入 ${uniqueNames.length} 名学生，所有记录已清空。`);
+                        }
+                    }
+                },
+                exportToCSV() {
+                    try {
+                        let csvRows = [];
+                        let headerRow = ['学生姓名'];
+                        for (let col = 0; col < 7; col++) {
+                            headerRow.push(`${this.weekDays[col]} ${this.getDateStr(col)}`);
+                        }
+                        csvRows.push(headerRow.map(cell => `"${cell.replace(/"/g, '""')}"`).join(','));
+                        for (let student of this.studentList) {
+                            let row = [student];
+                            for (let col = 0; col < 7; col++) {
+                                const key = `${student}-${col}`;
+                                let text = this.records[key] || '';
+                                row.push(text);
+                            }
+                            csvRows.push(row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','));
+                        }
+                        csvRows.push('');
+                        csvRows.push('"特殊情况学生 (基于当前统计范围及分类筛选)"');
+                        csvRows.push('日期,学生,状态');
+                        for (let day of this.dailySpecialStudents) {
+                            for (let item of day.students) {
+                                const statusText = item.statuses.map(s => s.text).join('; ');
+                                csvRows.push(`"${day.dateStr} ${day.weekdayName}","${item.student}","${statusText.replace(/"/g, '""')}"`);
+                            }
+                        }
+                        const csvString = csvRows.join('\n');
+                        const blob = new Blob(['\uFEFF' + csvString], { type: 'text/csv;charset=utf-8;' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `班级周记_${this.weekRangeText.replace(/[~\\/]/g, '-')}.csv`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        alert('导出成功！');
+                    } catch (err) {
+                        console.error(err);
+                        alert('导出失败，请稍后重试。');
+                    }
+                },
+                resetToDefault() {
+                    if (confirm('重置为示例数据（包含默认学生名单及演示记录）？当前数据将被覆盖。')) {
+                        this.studentList = [...defaultStudentArray];
+                        this.records = generateExampleRecords();
+                        localStorage.setItem('class_week_records', JSON.stringify(this.records));
+                        this.studentGroups = {...defaultStudentGroups};
+                        localStorage.setItem('class_student_groups', JSON.stringify(this.studentGroups));
+                        this.statusTypes = getDefaultStatusTypes();
+                        localStorage.removeItem(STATUS_TYPES_STORAGE_KEY);
+                        this.weekStartDay = 4;
+                        localStorage.setItem('class_week_start_day', '4');
+                        this.currentWeekStart = getStartOfWeek(new Date(), this.weekStartDay);
+                        this.selectedStatCats = this.statusTypes.map(t => t.key).concat('special');
+                        alert('已重置为演示数据（含20人模拟分组及示例扣分记录）');
+                    }
+                },
+                openSettings() {
+                    this.editingStatusTypes = this.statusTypes.map(t => ({...t}));
+                    this.editingWeekStartDay = this.weekStartDay;
+                    this.showColorPicker = null;
+                    this.showSettingsModal = true;
+                },
+                saveCustomTypes() {
+                    const cleaned = this.editingStatusTypes.map(t => ({
+                        key: t.key,
+                        label: t.label.trim() || '未命名',
+                        color: t.color,
+                        abbr: t.abbr.trim() || '?'
+                    }));
+                    this.statusTypes = cleaned;
+                    localStorage.setItem(STATUS_TYPES_STORAGE_KEY, JSON.stringify(cleaned));
+                    // 保存周起始日
+                    if (Number(this.editingWeekStartDay) !== this.weekStartDay) {
+                        this.weekStartDay = Number(this.editingWeekStartDay);
+                        localStorage.setItem('class_week_start_day', String(this.weekStartDay));
+                        this.currentWeekStart = getStartOfWeek(new Date(), this.weekStartDay);
+                    }
+                    // 同步 selectedStatCats，清除已不存在的 key
+                    const validKeys = new Set(cleaned.map(t => t.key));
+                    validKeys.add('special');
+                    this.selectedStatCats = this.selectedStatCats.filter(k => validKeys.has(k));
+                    this.showSettingsModal = false;
+                },
+                addCustomType() {
+                    const idx = this.editingStatusTypes.length;
+                    const newKey = 'custom_' + Date.now() + '_' + idx;
+                    this.editingStatusTypes.push({
+                        key: newKey,
+                        label: '新扣分项',
+                        color: PRESET_COLORS[idx % PRESET_COLORS.length],
+                        abbr: '新'
+                    });
+                },
+                removeCustomType(idx) {
+                    if (this.editingStatusTypes.length <= 1) {
+                        alert('至少保留一个扣分项');
+                        return;
+                    }
+                    this.editingStatusTypes.splice(idx, 1);
+                },
+                setTypeColor(idx, color) {
+                    this.editingStatusTypes[idx].color = color;
+                    this.showColorPicker = null;
+                },
+                toggleColorPicker(idx) {
+                    this.showColorPicker = this.showColorPicker === idx ? null : idx;
+                },
+                resetCustomTypes() {
+                    if (confirm('重置扣分项为默认设置（迟到/旷课/违纪/卫生/作业）？')) {
+                        this.editingStatusTypes = getDefaultStatusTypes().map(t => ({...t}));
+                    }
+                },
+
+            }
+        });
+    })();
+</script>
+</body>
+</html>
