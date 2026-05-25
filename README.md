@@ -15,9 +15,11 @@
 
 ## 使用
 
-直接用浏览器打开 `班级周度管理系统 · 支持Excel导入学生姓名.html` 即可。
+### 在线使用（推荐）
+打开 [https://asteriya-phd.github.io/class-manager/](https://asteriya-phd.github.io/class-manager/) 即可。
 
-所有数据保存在浏览器本地存储（localStorage）中，无需后端服务器。
+### 离线使用
+下载 `index.html` 用浏览器打开即可，所有数据保存在浏览器本地，无需网络。
 
 ## 导入学生名单
 
