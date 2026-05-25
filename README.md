@@ -8,7 +8,7 @@
 |---|---|
 | ![周视图](screenshot_table.png) | ![统计](screenshot_stats.png) |
 | **小组扣分排名** | **自定义扣分项** |
-| ![小组统计](screenshot_full.png) | ![设置](screenshot_settings.png) |
+| ![小组统计](screenshot_group.png) | ![设置](screenshot_settings.png) |
 
 ## 功能
 
