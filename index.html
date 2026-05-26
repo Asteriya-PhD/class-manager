@@ -689,6 +689,105 @@
             padding-top: 16px;
             border-top: 1px solid #e2e8f0;
         }
+    /* ========== 移动端适配 ========== */
+    @media (max-width: 600px) {
+        body { padding: 10px; }
+        .app-container { padding: 14px; border-radius: 16px; }
+        h1 {
+            font-size: 1.2rem;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        h1 small {
+            font-size: 0.75rem;
+            margin-left: 0;
+            width: 100%;
+            color: #94a3b8;
+        }
+        .top-bar {
+            padding: 10px 12px;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .date-picker-area {
+            width: 100%;
+            gap: 8px;
+        }
+        .week-selector { width: 100%; }
+        .week-selector span {
+            min-width: 0;
+            font-size: 0.8rem;
+            flex: 1;
+        }
+        .action-buttons {
+            width: 100%;
+            justify-content: center;
+            gap: 6px;
+        }
+        .btn { font-size: 0.72rem; padding: 5px 10px; }
+        .legend {
+            gap: 6px;
+            font-size: 0.68rem;
+            padding: 8px 10px;
+            border-radius: 20px;
+        }
+        .table-section {
+            max-height: none;
+            border-radius: 16px;
+            -webkit-overflow-scrolling: touch;
+        }
+        table { min-width: 660px; font-size: 0.7rem; }
+        th { padding: 8px 2px; font-size: 0.65rem; }
+        th:first-child { min-width: 60px !important; }
+        td { padding: 5px 2px; }
+        .student-name { font-size: 0.7rem; padding: 0 3px; white-space: normal; word-break: break-all; }
+        .day-cell { min-width: 80px; }
+        .cell-status-container { min-height: 30px; gap: 3px; }
+        .status-chip { font-size: 0.55rem; padding: 2px 5px; gap: 2px; }
+        .status-chip .remove-status { width: 12px; height: 12px; font-size: 0.65rem; }
+        .add-status-btn { width: 20px; height: 20px; font-size: 0.85rem; }
+        .add-menu { min-width: 90px; }
+        .add-menu div { font-size: 0.7rem; padding: 6px 12px; }
+        .stats-section { padding: 14px; }
+        .stats-header { flex-direction: column; gap: 10px; align-items: flex-start; }
+        .stats-header h2 { font-size: 1.1rem; }
+        .stat-tab { font-size: 0.78rem; padding: 4px 12px; }
+        .filter-cats { padding: 8px 12px; gap: 6px; border-radius: 24px; }
+        .filter-cats label { font-size: 0.72rem; padding: 4px 10px; }
+        .daily-block { padding: 12px 14px; }
+        .daily-date { font-size: 0.9rem; }
+        .student-name-stat { min-width: 60px; font-size: 0.8rem; }
+        .mini-tag { font-size: 0.62rem; padding: 2px 8px; }
+        .modal-container {
+            width: 95vw !important;
+            max-width: 95vw !important;
+            border-radius: 16px;
+        }
+        .modal-header { padding: 10px 14px; }
+        .modal-header h3 { font-size: 0.95rem; }
+        .modal-body { padding: 10px 14px; }
+        .settings-type-row {
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 10px;
+        }
+        .settings-type-row input[type="text"] { min-width: 70px; font-size: 0.78rem; }
+        .history-item {
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-start;
+        }
+        .footer-note { font-size: 0.65rem; }
+        .daily-student-list { max-height: 400px; }
+    }
+    /* 小平板适配 */
+    @media (min-width: 601px) and (max-width: 1024px) {
+        .app-container { padding: 18px 20px; }
+        h1 { font-size: 1.5rem; }
+        .day-cell { min-width: 100px; }
+        table { min-width: 700px; }
+    }
     </style>
     <!-- SheetJS 用于解析 Excel -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
