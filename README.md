@@ -2,6 +2,8 @@
 
 一个单 HTML 文件的班级日常管理工具，无需安装任何软件，打开浏览器即可使用。
 
+[📦 GitHub 仓库](https://github.com/Asteriya-PhD/class-manager) | [🚀 在线使用](https://asteriya-phd.github.io/class-manager/)
+
 ## 截图
 
 | 周度记录主界面 | 统计看板 |
@@ -26,7 +28,7 @@
 ## 使用
 
 ### 在线使用（推荐）
-打开 [https://asteriya-phd.github.io/class-manager/](https://asteriya-phd.github.io/class-manager/) 即可。
+打开 [asteriya-phd.github.io/class-manager](https://asteriya-phd.github.io/class-manager/) 即可。
 
 ### 离线使用
 下载 `index.html` 用浏览器打开即可，所有数据保存在浏览器本地，无需网络。
