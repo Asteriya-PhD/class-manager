@@ -1422,45 +1422,36 @@
                         }
                     } catch(e) {}
                 }
-                const saved = localStorage.getItem('class_week_records');
-                if (saved) {
+                this.historyList = loadHistoryFromStorage();
+                const savedRecords = localStorage.getItem('class_week_records');
+                const isFirstTime = !savedRecords && this.historyList.length === 0;
+
+                if (savedRecords) {
                     try {
-                        const parsed = JSON.parse(saved);
-                        // 检查本地数据是否与当前学生名单匹配
-                        const currentNames = new Set(this.studentList);
-                        const hasMatchingData = Object.keys(parsed).some(key => {
-                            const name = key.split('-')[0];
-                            return currentNames.has(name) && parsed[key];
-                        });
-                        if (hasMatchingData) {
-                            this.records = parsed;
-                        } else {
-                            // 数据不匹配（旧版数据或学生名单已变）→ 用演示数据
-                            this.records = generateExampleRecords();
-                        }
+                        this.records = JSON.parse(savedRecords);
                     } catch (e) {
                         this.records = generateEmptyRecordsForStudents(this.studentList);
                     }
-                } else {
-                    // 首次使用 → 用演示数据
+                } else if (isFirstTime) {
+                    // 第一次使用（无本地数据、无快照）→ 加载演示数据
                     this.records = generateExampleRecords();
+                } else {
+                    // 有快照但无当前周记录 → 给空记录
+                    this.records = generateEmptyRecordsForStudents(this.studentList);
                 }
-                this.historyList = loadHistoryFromStorage();
+
                 const savedGroups = localStorage.getItem('class_student_groups');
                 if (savedGroups) {
                     try {
-                        const parsed = JSON.parse(savedGroups);
-                        // 同样检查分组是否匹配当前学生
-                        const currentNames = new Set(this.studentList);
-                        const hasMatchingGroup = Object.keys(parsed).some(name => currentNames.has(name));
-                        if (hasMatchingGroup) {
-                            this.studentGroups = parsed;
-                        } else {
-                            this.studentGroups = {...defaultStudentGroups};
-                        }
-                    } catch(e) { this.studentGroups = {...defaultStudentGroups}; }
-                } else {
+                        this.studentGroups = JSON.parse(savedGroups);
+                    } catch(e) {
+                        this.studentGroups = {};
+                    }
+                } else if (isFirstTime) {
+                    // 首次使用时加载演示分组，让用户直观看到分组功能
                     this.studentGroups = {...defaultStudentGroups};
+                } else {
+                    this.studentGroups = {};
                 }
                 document.addEventListener('click', this.handleClickOutside);
             },
