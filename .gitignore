@@ -12,3 +12,12 @@ Thumbs.db
 公众号推文版.html
 班级周度管理系统\ *\ 功能说明.html
 QQ2026*.png
+公众号封面.png
+mobile_*
+_post_article.py
+generate_cover.py
+
+# Tool / temp dirs
+.omc/
+.omo/
+.playwright-mcp/
